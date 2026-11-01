@@ -1,0 +1,1227 @@
+/* ==========================================================================
+   NOCTIS — Luxury Electric Brand Scrollytelling Stylesheet
+   Strict Rules: Flat colors only. Zero gradients. Zero glassmorphism/blurs.
+   Zero drop-shadows. Zero rounded bubbly cards. 1px hairlines and pure type.
+   ========================================================================== */
+
+:root {
+  /* Design Tokens */
+  --asphalt: #07080A;
+  --graphite: #121418;
+  --fog: #8A8F98;
+  --bone: #EDEAE4;
+  --xenon: #CFE3FF;
+  --taillight: #E1251B;
+  --hairline: rgba(237, 234, 228, 0.12);
+  --hairline-solid: #202328;
+
+  /* Typography */
+  --font-display: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-hud: 'JetBrains Mono', monospace;
+
+  /* Easing */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-nav: transform 0.45s var(--ease-out-expo);
+}
+
+/* Base Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background-color: var(--asphalt);
+  color: var(--bone);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: clip; /* Prevent horizontal overflow without breaking position:sticky */
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--asphalt);
+  color: var(--bone);
+  overflow-x: clip;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Hide native cursor only on fine pointer devices when site is loaded */
+@media (pointer: fine) {
+  body:not(.reduced-motion) {
+    cursor: none;
+  }
+  body:not(.reduced-motion) a,
+  body:not(.reduced-motion) button,
+  body:not(.reduced-motion) [role="button"] {
+    cursor: none;
+  }
+}
+
+/* Typography Classes */
+.font-display {
+  font-family: var(--font-display);
+  font-stretch: 125%; /* Expanded width axis */
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-weight: 300;
+  line-height: 1.05;
+}
+
+.font-body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: clamp(15px, 1.1vw, 17px);
+  line-height: 1.6;
+  max-width: 52ch;
+  color: var(--fog);
+}
+
+.font-hud {
+  font-family: var(--font-hud);
+  font-weight: 400;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/* Masked line reveals */
+.line-mask {
+  overflow: hidden;
+  display: block;
+}
+
+.line-mask > * {
+  display: block;
+  transform: translateY(100%);
+  transition: transform 0.9s var(--ease-out-expo);
+}
+
+.line-mask.revealed > * {
+  transform: translateY(0%);
+}
+
+/* ==========================================================================
+   GLOBAL EFFECTS: Film Grain Overlay
+   ========================================================================== */
+.grain-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0.035;
+}
+
+/* ==========================================================================
+   CUSTOM CURSOR ("The Headlight")
+   ========================================================================== */
+.cursor-headlight {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  display: none;
+}
+
+@media (pointer: fine) {
+  .cursor-headlight {
+    display: block;
+  }
+}
+
+/* Default state: 6px solid dot inside 28px ring */
+.cursor-ring {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--xenon);
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.25s var(--ease-out-expo), height 0.25s var(--ease-out-expo), opacity 0.2s linear;
+}
+
+.cursor-dot {
+  width: 6px;
+  height: 6px;
+  background-color: var(--xenon);
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.2s linear;
+}
+
+/* Lightbar state over links/interactive elements: 44x2px bar */
+.cursor-lightbar {
+  width: 44px;
+  height: 2px;
+  background-color: var(--xenon);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scaleX(0);
+  opacity: 0;
+  transition: transform 0.25s var(--ease-out-expo), opacity 0.2s linear, background-color 0.12s linear;
+}
+
+.cursor-label {
+  position: absolute;
+  top: 50%;
+  left: calc(50% + 28px);
+  transform: translateY(-50%);
+  color: var(--xenon);
+  font-size: 10px;
+  white-space: nowrap;
+  letter-spacing: 0.14em;
+  opacity: 0;
+  transition: opacity 0.2s linear, transform 0.25s var(--ease-out-expo);
+}
+
+/* Active Hover State (Interactive element hovered) */
+.cursor-headlight.is-hovering .cursor-ring {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.5);
+}
+
+.cursor-headlight.is-hovering .cursor-dot {
+  opacity: 0;
+}
+
+.cursor-headlight.is-hovering .cursor-lightbar {
+  opacity: 1;
+  transform: translate(-50%, -50%) scaleX(1);
+}
+
+.cursor-headlight.is-hovering .cursor-label {
+  opacity: 1;
+  transform: translateY(-50%);
+}
+
+/* Mouse Down Flash (120ms brighter light bar) */
+.cursor-headlight.is-down .cursor-lightbar {
+  background-color: #FFFFFF;
+}
+
+.cursor-headlight.is-down .cursor-ring {
+  border-color: #FFFFFF;
+}
+
+.cursor-headlight.is-down .cursor-dot {
+  background-color: #FFFFFF;
+}
+
+/* ==========================================================================
+   PRELOADER
+   ========================================================================== */
+.preloader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--asphalt);
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.6s var(--ease-out-expo);
+}
+
+.preloader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  width: 240px;
+  text-align: center;
+}
+
+.preloader-wordmark {
+  font-size: 32px;
+  letter-spacing: 0.2em;
+  color: var(--bone);
+}
+
+.preloader-track {
+  width: 100%;
+  height: 1px;
+  background-color: var(--hairline-solid);
+  position: relative;
+  overflow: hidden;
+}
+
+.preloader-line {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 100%;
+  width: 0%;
+  background-color: var(--xenon);
+  transition: width 0.1s linear, background-color 0.15s ease;
+}
+
+.preloader-counter {
+  color: var(--fog);
+  font-size: 11px;
+}
+
+/* Exit flash state */
+.preloader.exiting .preloader-line {
+  background-color: #FFFFFF;
+  box-shadow: none;
+}
+
+.preloader.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   NAVIGATION
+   ========================================================================== */
+.site-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 72px;
+  padding: 0 clamp(24px, 5vw, 64px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 900;
+  background: transparent;
+  mix-blend-mode: difference;
+  transition: var(--transition-nav);
+}
+
+.site-nav.nav-hidden {
+  transform: translateY(-100%);
+}
+
+.nav-brand {
+  font-size: 20px;
+  letter-spacing: 0.15em;
+  color: #FFFFFF;
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  gap: clamp(16px, 3vw, 40px);
+  align-items: center;
+}
+
+.nav-link {
+  color: #FFFFFF;
+  text-decoration: none;
+  font-size: 11px;
+  position: relative;
+  padding: 4px 0;
+  transition: opacity 0.2s ease;
+}
+
+.nav-link:hover {
+  opacity: 0.7;
+}
+
+.nav-link--reserve {
+  padding-left: 12px;
+  border-left: 2px solid var(--taillight);
+}
+
+/* Focus visible state */
+.nav-link:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: 1px solid var(--xenon);
+  outline-offset: 4px;
+}
+
+/* ==========================================================================
+   PINNED SCROLLYTELLING CORE (Hero & Dismantle)
+   ========================================================================== */
+.scrolly-section {
+  position: relative;
+  width: 100%;
+  background-color: var(--asphalt);
+}
+
+.scrolly-wrapper {
+  position: relative;
+  width: 100%;
+  /* Height set via JavaScript from config.js */
+  height: 600vh;
+}
+
+#dismantle-wrapper {
+  height: 350vh;
+}
+
+.scrolly-stage {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--asphalt);
+}
+
+.scrolly-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Pinned Progress Bar (1px Xenon line at bottom) */
+.section-progress-track {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background-color: var(--hairline);
+  z-index: 50;
+}
+
+.section-progress-fill {
+  height: 100%;
+  width: 0%;
+  background-color: var(--xenon);
+  transition: width 0.05s linear;
+}
+
+/* ==========================================================================
+   SECTION 1: HERO
+   ========================================================================== */
+.hero-blackout-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--asphalt);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10;
+  transition: opacity 0.1s linear;
+}
+
+/* Left HUD */
+.hero-hud {
+  position: absolute;
+  top: 50%;
+  left: clamp(24px, 4vw, 56px);
+  transform: translateY(-50%);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+  pointer-events: none;
+}
+
+.hud-chapter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--bone);
+}
+
+.hud-tick {
+  display: inline-block;
+  width: 2px;
+  height: 14px;
+  background-color: var(--taillight);
+}
+
+.hud-telemetry {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-left: 1px solid var(--hairline);
+  padding-left: 12px;
+}
+
+.hud-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hud-val {
+  font-size: 15px;
+  color: var(--bone);
+  letter-spacing: 0.08em;
+}
+
+.hud-unit {
+  font-size: 9px;
+  color: var(--fog);
+}
+
+/* Hero Chapters Overlay (Placed in empty sky, top 14% to 32%) */
+.hero-chapters-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.hero-chapter {
+  position: absolute;
+  top: clamp(12%, 16vh, 22%);
+  left: clamp(24px, 14vw, 180px);
+  right: clamp(24px, 6vw, 80px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s var(--ease-out-expo);
+}
+
+.hero-chapter.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.chapter-title {
+  font-size: clamp(44px, 7.5vw, 120px);
+  font-weight: 300;
+  color: var(--bone);
+  margin-bottom: 8px;
+}
+
+.chapter-subtitle {
+  font-size: clamp(16px, 1.4vw, 22px);
+  color: var(--fog);
+  margin-bottom: 24px;
+}
+
+.chapter-hint {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--fog);
+  margin-top: 16px;
+}
+
+.hint-pulse-line {
+  display: inline-block;
+  width: 28px;
+  height: 1px;
+  background-color: var(--xenon);
+  animation: pulse-line 2.2s infinite ease-in-out;
+}
+
+@keyframes pulse-line {
+  0%, 100% { opacity: 0.3; transform: scaleX(0.7); }
+  50% { opacity: 1; transform: scaleX(1); }
+}
+
+.chapter-heading {
+  font-size: clamp(32px, 5.2vw, 84px);
+  font-weight: 300;
+  color: var(--bone);
+  max-width: 16ch;
+}
+
+.chapter-model {
+  font-size: clamp(48px, 8vw, 130px);
+  font-weight: 300;
+  color: var(--bone);
+  margin-bottom: 12px;
+}
+
+.chapter-specs {
+  color: var(--fog);
+  letter-spacing: 0.14em;
+  margin-bottom: 20px;
+}
+
+.chapter-cta {
+  display: inline-block;
+  color: var(--xenon);
+  text-decoration: none;
+  border-bottom: 1px solid var(--xenon);
+  padding-bottom: 4px;
+  letter-spacing: 0.14em;
+  transition: opacity 0.2s ease;
+}
+
+.chapter-cta:hover {
+  opacity: 0.75;
+}
+
+/* ==========================================================================
+   SECTION 2: STATEMENT (Unpinned Word Reveal)
+   ========================================================================== */
+.statement-section {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(60px, 10vh, 120px) clamp(24px, 8vw, 140px);
+  background-color: var(--asphalt);
+  position: relative;
+  border-top: 1px solid var(--hairline);
+}
+
+.statement-inner {
+  max-width: 1100px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.statement-tag {
+  color: var(--fog);
+  letter-spacing: 0.16em;
+}
+
+.statement-text {
+  font-size: clamp(32px, 5vw, 76px);
+  font-weight: 300;
+  line-height: 1.15;
+  color: var(--bone);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3em;
+}
+
+.statement-word {
+  opacity: 0.15;
+  transition: opacity 0.35s var(--ease-out-expo);
+}
+
+.statement-word.lit {
+  opacity: 1;
+}
+
+/* ==========================================================================
+   SECTION 3: DISMANTLE
+   ========================================================================== */
+.dismantle-header {
+  position: absolute;
+  top: clamp(28px, 6vh, 64px);
+  left: clamp(24px, 5vw, 64px);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.dismantle-label {
+  color: var(--fog);
+}
+
+.dismantle-title {
+  font-size: clamp(32px, 4.5vw, 64px);
+  font-weight: 300;
+  color: var(--bone);
+}
+
+/* Dismantle Component Callouts */
+.dismantle-callouts-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 25;
+}
+
+.dismantle-callout {
+  position: absolute;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.6s var(--ease-out-expo), transform 0.6s var(--ease-out-expo);
+  pointer-events: none;
+}
+
+.dismantle-callout.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.callout-dot {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background-color: var(--xenon);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.callout-line-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.callout-line {
+  stroke: var(--hairline-solid);
+  stroke-width: 1px;
+}
+
+.callout-card {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-left: 1px solid var(--hairline-solid);
+  padding-left: 12px;
+  width: max-content;
+  max-width: 220px;
+}
+
+.callout-name {
+  color: var(--xenon);
+  letter-spacing: 0.16em;
+}
+
+.callout-desc {
+  font-size: 13px;
+  color: var(--bone);
+  line-height: 1.35;
+}
+
+/* ==========================================================================
+   SECTION 4: LINEUP (Hover Accordion)
+   ========================================================================== */
+.lineup-section {
+  min-height: 100vh;
+  background-color: var(--asphalt);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--hairline);
+  padding: clamp(48px, 6vh, 80px) 0 0 0;
+}
+
+.lineup-header {
+  padding: 0 clamp(24px, 5vw, 64px);
+  margin-bottom: clamp(24px, 4vh, 48px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lineup-tag {
+  color: var(--fog);
+}
+
+.lineup-heading {
+  font-size: clamp(32px, 4.5vw, 64px);
+  font-weight: 300;
+  color: var(--bone);
+}
+
+/* Accordion Container */
+.lineup-accordion {
+  flex: 1;
+  display: flex;
+  width: 100%;
+  height: clamp(520px, 70vh, 760px);
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Single Slide Button */
+.lineup-slide {
+  position: relative;
+  flex: 1 1 12vw;
+  height: 100%;
+  background-color: var(--asphalt);
+  border: none;
+  border-right: 1px solid var(--hairline);
+  padding: 0;
+  text-align: left;
+  outline: none;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: flex-grow 0.7s var(--ease-out-expo), flex-basis 0.7s var(--ease-out-expo), transform 0.6s var(--ease-out-expo), opacity 0.6s var(--ease-out-expo);
+}
+
+.lineup-slide:last-child {
+  border-right: none;
+}
+
+/* Stagger entrance when lineup section scrolls into view */
+.lineup-accordion.animate-in .lineup-slide {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.lineup-slide:nth-child(1) { transition-delay: 0.00s; }
+.lineup-slide:nth-child(2) { transition-delay: 0.08s; }
+.lineup-slide:nth-child(3) { transition-delay: 0.16s; }
+.lineup-slide:nth-child(4) { transition-delay: 0.24s; }
+.lineup-slide:nth-child(5) { transition-delay: 0.32s; }
+
+/* Open State */
+.lineup-slide.open {
+  flex-grow: 5.5;
+  flex-basis: 52vw;
+}
+
+/* Closed View */
+.slide-closed-view {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(20px, 3vh, 32px) clamp(12px, 1.5vw, 24px);
+  pointer-events: none;
+  transition: opacity 0.4s var(--ease-out-expo);
+  z-index: 2;
+}
+
+.slide-num {
+  color: var(--fog);
+  font-size: 13px;
+}
+
+.slide-vertical-name {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  letter-spacing: 0.2em;
+  color: var(--bone);
+  font-size: 14px;
+  align-self: center;
+  margin-bottom: 24px;
+}
+
+.slide-thumb-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 85% center; /* Cropped tight on car's front light bar */
+  filter: grayscale(100%) brightness(25%);
+  transition: filter 0.6s var(--ease-out-expo);
+  z-index: -1;
+}
+
+.lineup-slide.open .slide-closed-view {
+  opacity: 0;
+}
+
+/* Open View */
+.slide-open-view {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(24px, 4vh, 48px) clamp(24px, 4vw, 56px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s var(--ease-out-expo);
+  z-index: 3;
+}
+
+.lineup-slide.open .slide-open-view {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.slide-top-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.slide-open-num {
+  color: var(--fog);
+}
+
+.slide-open-name {
+  font-size: clamp(36px, 5.5vw, 76px);
+  color: var(--bone);
+  font-weight: 300;
+}
+
+/* Car Stage & Floor Line (Wheels sitting at 72% height) */
+.slide-car-stage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.slide-car-img {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center 72%;
+  filter: none;
+  transform: translateX(-6%);
+  opacity: 0;
+  transition: transform 0.75s var(--ease-out-expo), opacity 0.6s var(--ease-out-expo);
+}
+
+.lineup-slide.open .slide-car-img {
+  transform: translateX(0%);
+  opacity: 1;
+}
+
+/* Bottom Content */
+.slide-bottom-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  z-index: 4;
+  margin-top: auto;
+}
+
+.slide-tagline {
+  font-size: 16px;
+  color: var(--bone);
+}
+
+.slide-specs {
+  display: flex;
+  gap: clamp(24px, 4vw, 48px);
+  border-top: 1px solid var(--hairline);
+  padding-top: 14px;
+}
+
+.spec-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.spec-label {
+  color: var(--fog);
+  font-size: 9px;
+}
+
+.spec-val {
+  color: var(--bone);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+}
+
+/* Swatches & CTA */
+.slide-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+}
+
+.color-swatches {
+  display: flex;
+  gap: 8px;
+}
+
+.swatch {
+  width: 12px;
+  height: 12px;
+  border: none;
+  outline: none;
+  padding: 0;
+  border-radius: 0; /* Strict: no rounded bubbly shapes */
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.swatch.active {
+  outline: 1px solid var(--bone);
+  outline-offset: 2px;
+}
+
+.slide-cta {
+  color: var(--xenon);
+  text-decoration: none;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  transition: opacity 0.2s ease;
+}
+
+.slide-cta:hover {
+  opacity: 0.75;
+}
+
+/* Mobile Lineup (< 768px): Vertical Stack of 72px rows */
+@media (max-width: 767px) {
+  .lineup-accordion {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .lineup-slide {
+    flex: 0 0 72px;
+    height: 72px;
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .lineup-slide.open {
+    flex: 0 0 540px;
+    height: 540px;
+  }
+
+  .slide-closed-view {
+    flex-direction: row;
+    align-items: center;
+    padding: 0 24px;
+  }
+
+  .slide-vertical-name {
+    writing-mode: horizontal-tb;
+    transform: none;
+    margin-bottom: 0;
+  }
+
+  .slide-thumb-img {
+    display: none;
+  }
+
+  .slide-car-stage {
+    position: relative;
+    height: 220px;
+  }
+}
+
+/* ==========================================================================
+   SECTION 5: RESERVE
+   ========================================================================== */
+.reserve-section {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--asphalt);
+  position: relative;
+  padding: 0 clamp(24px, 6vw, 80px);
+  text-align: center;
+  border-top: 1px solid var(--hairline);
+}
+
+.reserve-inner {
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+.reserve-title {
+  font-size: clamp(40px, 7vw, 110px);
+  color: var(--bone);
+  font-weight: 300;
+}
+
+.reserve-desc {
+  max-width: 48ch;
+  color: var(--fog);
+}
+
+.reserve-btn-wrap {
+  margin-top: 24px;
+}
+
+.reserve-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 36px;
+  border: 1px solid var(--xenon);
+  background-color: transparent;
+  color: var(--xenon);
+  text-decoration: none;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  transition: background-color 0.25s var(--ease-out-expo), color 0.25s var(--ease-out-expo), border-color 0.25s var(--ease-out-expo);
+  position: relative;
+}
+
+.btn-tick {
+  width: 2px;
+  height: 12px;
+  background-color: var(--taillight);
+  opacity: 0;
+  transform: scaleY(0);
+  transition: opacity 0.25s var(--ease-out-expo), transform 0.25s var(--ease-out-expo);
+}
+
+/* Button Hover State */
+.reserve-btn:hover {
+  background-color: var(--xenon);
+  color: var(--asphalt);
+}
+
+.reserve-btn:hover .btn-tick {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+/* ==========================================================================
+   SITE FOOTER
+   ========================================================================== */
+.site-footer {
+  border-top: 1px solid var(--hairline);
+  background-color: var(--asphalt);
+  padding: clamp(48px, 6vh, 80px) clamp(24px, 5vw, 64px) clamp(32px, 4vh, 48px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(40px, 6vh, 64px);
+}
+
+.footer-top {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 40px;
+}
+
+.footer-brand {
+  font-size: 28px;
+  letter-spacing: 0.16em;
+  color: var(--bone);
+}
+
+.footer-links-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(130px, 1fr));
+  gap: clamp(24px, 4vw, 56px);
+}
+
+.footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.footer-col-title {
+  color: var(--fog);
+  font-size: 10px;
+}
+
+.footer-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-link {
+  color: var(--bone);
+  text-decoration: none;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  transition: opacity 0.2s ease;
+}
+
+.footer-link:hover {
+  opacity: 0.6;
+}
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  border-top: 1px solid var(--hairline);
+  padding-top: 24px;
+  color: var(--fog);
+  font-size: 10px;
+}
+
+/* ==========================================================================
+   ACCESSIBILITY: prefers-reduced-motion
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  body.reduced-motion {
+    cursor: auto !important;
+  }
+
+  body.reduced-motion * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+
+  /* Unpin stages in reduced motion */
+  .scrolly-wrapper {
+    height: auto !important;
+  }
+
+  .scrolly-stage {
+    position: relative !important;
+    height: 100vh !important;
+  }
+
+  .hero-chapter {
+    opacity: 1 !important;
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    padding: 60px 24px;
+  }
+
+  .line-mask > * {
+    transform: none !important;
+  }
+
+  .cursor-headlight {
+    display: none !important;
+  }
+}
+

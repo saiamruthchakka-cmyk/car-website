@@ -1,0 +1,13 @@
+# OS and temporary files
+.DS_Store
+Thumbs.db
+*.tmp
+*.log
+__pycache__/
+*.pyc
+
+# Archive files
+*.zip.zip
+clip2 frame.zip
+clip3 frame.zip
+flow clip frame.zip
